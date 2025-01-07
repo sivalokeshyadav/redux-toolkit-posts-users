@@ -94,7 +94,8 @@ import {
 } from "../apis/fetchingUserApis";
 
 const Users = () => {
-  const [update, setUpdate] = useState(false);
+  const [updatePost, setUpdatePost] = useState(null); // To store the post being updated
+  const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
   const loading = useSelector((state) => state.users.loading);
   const error = useSelector((state) => state.users.error);
   const posts = useSelector((state) => state.users.posts);
@@ -105,16 +106,20 @@ const Users = () => {
   }, [dispatch]);
 
   const handleDeletePost = (postId) => {
+    console.log("Deleting post with ID:", postId); 
     dispatch(fetchingDeleteUsers(postId));
   };
 
-  const handleUpdatePost = (post) => {
-    dispatch(fetchingUpdateUsers(post));
+  const handleUpdatePost = (updatedPost) => {
+    dispatch(fetchingUpdateUsers(updatedPost));
+    setIsModalVisible(false); // Close the modal after updating
   };
-  const onClickUpdate = () => {
-    setUpdate(true);
+
+  const openUpdateModal = (post) => {
+    setUpdatePost(post); // Store the post to be updated
+    setIsModalVisible(true); // Show the modal
   };
-  // Use `useMemo` to optimize rendering of the post list
+
   const postList = useMemo(() => {
     return posts.map((post) => (
       <div key={post.id} style={{ marginBottom: "1rem" }}>
@@ -136,7 +141,7 @@ const Users = () => {
                 color: "white",
                 backgroundColor: "green",
               }}
-              onClick={onClickUpdate}
+              onClick={() => openUpdateModal(post)} // Open the update modal
             >
               Update
             </button>
@@ -159,22 +164,80 @@ const Users = () => {
       {loading && <h2>Loading...</h2>}
       {error && !loading && <h2>Error: {error}</h2>}
       {!loading && postList}
-      {update && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const updatedPost = {
-              ...e.target.elements[0].value,
-              id: parseInt(e.target.elements[1].value),
-            };
-            handleUpdatePost(updatedPost);
-            setUpdate(false);
+
+      {/* Modal for updating a post */}
+      {isModalVisible && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            background: "white",
+            padding: "2rem",
+            border: "1px solid #ccc",
+            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
           }}
         >
-          <input type="text" name="title" placeholder="Enter new title" />
-          <input type="number" name="id" placeholder="Enter new ID" />
-          <button type="submit">Update Post</button>
-        </form>
+          <h2>Update Post</h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const updatedPost = {
+                ...updatePost,
+                title: e.target.elements.title.value,
+                body: e.target.elements.body.value,
+              };
+              handleUpdatePost(updatedPost); // Dispatch update action
+            }}
+          >
+            <div style={{ marginBottom: "1rem" }}>
+              <label>
+                Title:{" "}
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={updatePost?.title}
+                  required
+                />
+              </label>
+            </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <label>
+                Body:{" "}
+                <textarea
+                  name="body"
+                  defaultValue={updatePost?.body}
+                  required
+                  rows="4"
+                  style={{ width: "100%" }}
+                />
+              </label>
+            </div>
+            <div>
+              <button
+                type="button"
+                style={{
+                  marginRight: "1rem",
+                  color: "white",
+                  backgroundColor: "gray",
+                }}
+                onClick={() => setIsModalVisible(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                style={{
+                  color: "white",
+                  backgroundColor: "blue",
+                }}
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

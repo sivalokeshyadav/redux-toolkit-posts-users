@@ -1,5 +1,10 @@
-import {createSlice} from "@reduxjs/toolkit";
-import { fetchingAddUsers, fetchingDeleteUsers, fetchingGetUsers, fetchingUpdateUsers } from "../apis/fetchingUserApis";
+import { createSlice } from "@reduxjs/toolkit";
+import {
+  fetchingAddUsers,
+  fetchingDeleteUsers,
+  fetchingGetUsers,
+  fetchingUpdateUsers,
+} from "../apis/fetchingUserApis";
 
 const initialState = {
   posts: [],
@@ -41,13 +46,13 @@ const userSlice = createSlice({
       })
       .addCase(fetchingUpdateUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts = action.payload;
-        const index=state.posts.findIndex(post=>post.id===action.payload.id)
-        if(index!=-1){
-            const updatedPost=state.posts[index]
-            updatedPost.title=action.payload.title
-            state.posts[index]=updatedPost;
-          
+
+        const index = state.posts.findIndex(
+          (post) => post.id === action.payload.id
+        );
+        if (index !== -1) {
+          // Update the specific post in the array
+          state.posts[index] = { ...state.posts[index], ...action.payload };
         }
       })
       .addCase(fetchingUpdateUsers.rejected, (state, action) => {
@@ -59,7 +64,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchingDeleteUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts = state.posts.filter(post=>post.id!=action.payload);
+        state.posts = state.posts.filter((post) => post.id != action.payload);
       })
       .addCase(fetchingDeleteUsers.rejected, (state, action) => {
         state.loading = false;

@@ -32,6 +32,7 @@ export const fetchingDeleteUsers = createAsyncThunk(
   "delete/users",
   async (userId) => {
     const response = await axiosInstance.delete(`/posts/${userId}`);
+    console.log("delete",response.data)
     return response.data;
   }
 );
